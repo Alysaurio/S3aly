@@ -1,19 +1,25 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : BaseEntity
 {
-    private BaseStats stats;
-    private WeaponData weapon;
+    public CircleCollider2D coll;
     public float range;
 
+    public List<GameObject> Enemies = new();
 
-    private void Awake()
+    // public override
+    public override void Awake()
     {
-        stats = new BaseStats(100, 10, 5, 1, 20);
-        weapon = new WeaponData(6, "gun");
+        //base.Awake();
+        stats = new(10, 2, 10, 10, 10);
+        coll = GetComponent<CircleCollider2D>();
+        coll.radius = range;
     }
-    void Start()
+    public override void Start()
     {
+        base.Start();
         InvokeRepeating("AutoAttackEnemies", 1f, 1f);
     }
 
@@ -28,21 +34,68 @@ public class Player : MonoBehaviour
     {
         print("ATAQUE!");
 
-        GameObject[] allEnemies = GameObject.FindGameObjectsWithTag("Enemy");
-
-        foreach (GameObject enemy in allEnemies)
+        foreach (GameObject enemy in Enemies)
         {
             float distance = Vector3.Distance(enemy.transform.position, transform.position);
 
-            if (distance <= range)
-                enemy.GetComponent<Enemy>().TakeDamage(this);
+            if (distance <= range && enemy.GetComponent<Enemy>() != null)
+            {
+                enemy.GetComponent<Enemy>().TakeDamage(this, Elements.None);
+                Debug.Log("eNEMIGO Dañado!!!!");
+            }
+                
         }
 
     }
-    public WeaponData Weapon => weapon;
+    
 
     private void OnDestroy()
     {
         Debug.Log("oh no me cancelaron");
     }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.GetComponent<Enemy>() != null)
+            Enemies.Add(collision.gameObject);
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        //if(Enemys.Find(collision.gameObject))
+        Enemies.Remove(collision.gameObject);
+    }
+
+    public override void TakeDamage(BaseEntity damager, Elements element)
+    {
+        // base.TakeDamage(damager);
+
+        Debug.Log(damager.Element);
+
+        int damage = damager.Stats.Power;
+
+        switch (damager.Element)
+        {
+            case Elements.None:
+                //damage = damage;
+                break;
+            case Elements.Fire:
+                damage *= 2;
+                break;
+            case Elements.Water:
+                damage /= 2;
+                break;
+            case Elements.Earth:
+                damage *= 3;
+                break;
+            case Elements.Air:
+                damage = 0;
+                break;
+            default:
+                break;
+        }
+
+        stats.TakeDamage(damage);
+    }
+
 }

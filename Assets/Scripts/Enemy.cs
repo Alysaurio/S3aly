@@ -1,27 +1,43 @@
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Enemy : BaseEntity
 {
-    public BaseStats stats;
-    private void Awake()
+    GameObject target;
+    public override void Awake()
     {
-        stats = new BaseStats(10, 10, 3, 1, 20);
+        //base.Awake();
+        stats = new(20, 2, 10, 10, 10);
 
+        target = GameObject.FindGameObjectWithTag("Player");
     }
-    void Start()
-    {
-        
-    }
-
+  
     void Update()
     {
         
     }
-    public void TakeDamage(Player player)
+    /*public void TakeDamage(Player player)
     {
         int newvida = stats.Health - player.Weapon.Damage;
         stats.SetHealth(newvida);
         Debug.Log ("daño sufrido" + newvida);
+    }*/
+
+    public override void TakeDamage(BaseEntity damager, Elements element)
+    {
+        if (stats == null || damager == null || damager.Stats == null)
+        {
+            Debug.Log("fatal error");
+            return;
+        }
+        int newvida = stats.Health - damager.Stats.Power ;
+        stats.SetHealth(newvida);
+        Debug.Log("daño sufrido" + newvida);
+    }
+
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.GetComponent<Player>() != null)
+            TakeDamage(,);
     }
 
     private void OnDestroy()

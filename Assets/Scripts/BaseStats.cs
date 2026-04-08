@@ -30,6 +30,12 @@ public class BaseStats
     public int Knockback => knockback;
     public int XP => xp;
 
+    public void TakeDamage(int damage)
+    {
+        health-=damage;
+        if (health < 0) 
+            health = 0;
+    }
     ~BaseStats()
     {
         Debug.Log("Eliminado por el garbage collector");
